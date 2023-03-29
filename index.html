@@ -1,48 +1,47 @@
+<!-- index.html -->
+
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <form id="upload-form">
-        <input type="file" name="image">
-        <button type="submit">Submit</button>
-    </form>
-    
-</body>
+<html>
+  <head>
+    <title>Urine Strip Color Analyzer</title>
+  </head>
+  <body>
+    <div id="app">
+      <input type="file" ref="fileInput" @change="uploadImage">
+      <div v-if="loading">Analyzing image...</div>
+      <div v-else-if="result">{{ result }}</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.2.6/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@0.24.0/dist/axios.min.js"></script>
+    <script>
+      const app = Vue.createApp({
+        data() {
+          return {
+            loading: false,
+            result: null,
+          };
+        },
+        methods: {
+          async uploadImage() {
+            const formData = new FormData();
+            formData.append('image', this.$refs.fileInput.files[0]);
+            this.loading = true;
+            try {
+              const response = await axios.post('/api/urine-strip-color', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+              });
+              this.result = JSON.stringify(response.data.colors);
+            } catch (error) {
+              console.error(error);
+              this.result = 'Error: ' + error.message;
+            } finally {
+              this.loading = false;
+            }
+          },
+        },
+      });
+      app.mount('#app');
+    </script>
+  </body>
 </html>
-<script>
-    // get the form element
-const form = document.getElementById('upload-form');
-
-// add an event listener for form submission
-form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-
-    // create a FormData object to send the file
-    const formData = new FormData(form);
-
-    // send a POST request to the backend
-    const response = await fetch('/identify-colors/', {
-        method: 'POST',
-        body: formData,
-    });
-
-    // get the results as JSON
-    const { colors } = await response.json();
-
-    // display the results
-    const resultElement = document.getElementById('result');
-    resultElement.innerHTML = '';
-    for (const color of colors) {
-        const colorElement = document.createElement('div');
-        colorElement.style.backgroundColor = `rgb(${color.join(', ')})`;
-        colorElement.innerText = `rgb(${color.join(', ')})`;
-        resultElement.appendChild(colorElement);
-    }
-});
-
-</script>
