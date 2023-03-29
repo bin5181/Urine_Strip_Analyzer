@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form id="upload-form">
+        <input type="file" name="image">
+        <button type="submit">Submit</button>
+    </form>
+    
+</body>
+</html>
+<script>
+    // get the form element
+const form = document.getElementById('upload-form');
+
+// add an event listener for form submission
+form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    // create a FormData object to send the file
+    const formData = new FormData(form);
+
+    // send a POST request to the backend
+    const response = await fetch('/identify-colors/', {
+        method: 'POST',
+        body: formData,
+    });
+
+    // get the results as JSON
+    const { colors } = await response.json();
+
+    // display the results
+    const resultElement = document.getElementById('result');
+    resultElement.innerHTML = '';
+    for (const color of colors) {
+        const colorElement = document.createElement('div');
+        colorElement.style.backgroundColor = `rgb(${color.join(', ')})`;
+        colorElement.innerText = `rgb(${color.join(', ')})`;
+        resultElement.appendChild(colorElement);
+    }
+});
+
+</script>
